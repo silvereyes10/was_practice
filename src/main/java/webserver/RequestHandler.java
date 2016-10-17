@@ -1,10 +1,14 @@
 package webserver;
 
 import com.google.common.collect.Maps;
+import db.DataBase;
+import model.User;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.IOUtils;
+import util.MemberUtils;
 
 import java.io.*;
 import java.net.Socket;
@@ -27,31 +31,25 @@ public class RequestHandler extends Thread {
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            String url = null;
-            String line = br.readLine();
-            while (!"".equals(line)) {
-                if (line == null) { break; }
-                log.debug("[Request Header] {}", line);
+            Map<String, String> parsingMap = headerParsing(br);
 
-                if (line.startsWith("GET") || line.startsWith("POST")) {
-                    Map<String, Object> parsingMap = urlParsing(line);
-                    url = MapUtils.getString(parsingMap, "requestPath");
-                    log.info("[REQUEST URL] : {}", url);
+            String method = MapUtils.getString(parsingMap, "method");
+            String url = MapUtils.getString(parsingMap, "requestPath");
 
-                    if (url.startsWith("/user/create")) {
-                        log.info("create!!!");
-
-                    } else {
-                        DataOutputStream dos = new DataOutputStream(out);
-                        byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-                        response200Header(dos, body.length);
-                        responseBody(dos, body);
-                    }
+            if ("/user/create".startsWith(url)) {
+                log.info("[REQUEST HANDLER] Method : {}", method);
+                if (parsingMap == null || parsingMap.isEmpty()) {
+                    log.error("[REQUEST HANDLER] Parameter is null. Member create process is fail.");
                 }
 
-                line = br.readLine();
+                User user = MemberUtils.createUserObject(parsingMap);
+                DataBase.addUser(user);
+            } else {
+                DataOutputStream dos = new DataOutputStream(out);
+                byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+                response200Header(dos, body.length);
+                responseBody(dos, body);
             }
-
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -77,22 +75,55 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private Map<String, Object> urlParsing(String line) {
-        String[] tokens = line.split(" ");
+    private Map<String, String> headerParsing(BufferedReader br) throws IOException {
+        String line = br.readLine();
+        String[] urlTokens = line.split(" ");
+        String method = urlTokens[0];
 
-        Map<String, Object> resultMap = Maps.newHashMap();
-        int index = tokens[1].indexOf("?");
-
-        if (index == -1) {
-            resultMap.put("requestPath", tokens[1]);
+        if (HttpRequestUtils.HTTP_METHOD_GET.equals(method)) {
+            return makeParamMapForGet(urlTokens[1]);
+        } else if (HttpRequestUtils.HTTP_METHOD_POST.equals(method)) {
+            return makeParamMapForPost(urlTokens[1], br);
         } else {
-            String requestPath = tokens[1].substring(0, index);
-            resultMap.put("requestPath", requestPath);
+            return Maps.newHashMap();
+        }
+    }
 
-            String params = tokens[1].substring(index + 1, tokens[1].length());
-            resultMap.put("params", HttpRequestUtils.parseQueryString(params));
+    private Map<String, String> makeParamMapForGet(String data) {
+        Map<String, String> parsingMap = Maps.newHashMap();
+
+        int index = data.indexOf("?");
+        if (index == -1) {
+            parsingMap.put("requestPath", data);
+            return parsingMap;
         }
 
-        return resultMap;
+        String requestPath = data.substring(0, index);
+
+        parsingMap.put("method", HttpRequestUtils.HTTP_METHOD_GET);
+        parsingMap.put("requestPath", requestPath);
+        parsingMap.putAll(HttpRequestUtils.parseQueryString(data.substring(index + 1, data.length())));
+
+        return parsingMap;
+    }
+
+    private Map<String, String> makeParamMapForPost(String data, BufferedReader br) throws IOException {
+        Map<String, String> parsingMap = Maps.newHashMap();
+        int contentLength = 0;
+
+        parsingMap.put("method", HttpRequestUtils.HTTP_METHOD_POST);
+        parsingMap.put("requestPath", data);
+
+        String line = br.readLine();
+        while (!line.equals("")) {
+            if (line.contains("Content-Length")) {
+                String[] contentLengthTokens = line.split(":");
+                contentLength = Integer.parseInt(contentLengthTokens[1].trim());
+            }
+            line = br.readLine();
+        }
+
+        parsingMap.putAll(HttpRequestUtils.parseQueryString(IOUtils.readData(br, contentLength)));
+        return parsingMap;
     }
 }
