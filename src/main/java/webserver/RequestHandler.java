@@ -100,7 +100,6 @@ public class RequestHandler extends Thread {
 
         String requestPath = data.substring(0, index);
 
-        parsingMap.put("method", HttpRequestUtils.HTTP_METHOD_GET);
         parsingMap.put("requestPath", requestPath);
         parsingMap.putAll(HttpRequestUtils.parseQueryString(data.substring(index + 1, data.length())));
 
@@ -111,7 +110,6 @@ public class RequestHandler extends Thread {
         Map<String, String> parsingMap = Maps.newHashMap();
         int contentLength = 0;
 
-        parsingMap.put("method", HttpRequestUtils.HTTP_METHOD_POST);
         parsingMap.put("requestPath", data);
 
         String line = br.readLine();
