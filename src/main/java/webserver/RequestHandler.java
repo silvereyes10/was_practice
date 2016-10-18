@@ -34,6 +34,7 @@ public class RequestHandler extends Thread {
             Map<String, String> parsingMap = headerParsing(br);
 
             String url = MapUtils.getString(parsingMap, "requestPath");
+            log.info("[REQUEST HANDLER] Request URL: {}", url);
 
             if ("/user/create".startsWith(url)) {
                 if (parsingMap == null || parsingMap.isEmpty()) {

@@ -3,6 +3,9 @@ package model;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static util.HttpResponseConstants.HTTP_200_RESPONSE_FORMAT;
+import static util.HttpResponseConstants.HTTP_302_RESPONSE_FORMAT;
+
 
 /**
  * @author NAVER
@@ -17,10 +20,7 @@ public enum HttpResponse {
         }
 
         private void responseHeader(DataOutputStream dos, int bodyLength) throws IOException {
-            dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + bodyLength + "\r\n");
-            dos.writeBytes("\r\n");
+            dos.writeBytes(String.format(HTTP_200_RESPONSE_FORMAT, bodyLength));
         }
 
         private void responseBody(DataOutputStream dos, byte[] body) throws IOException {
@@ -31,9 +31,8 @@ public enum HttpResponse {
 
     STATUS_302 {
         public void response(DataOutputStream dos, String redirectionUrl) throws IOException {
-            dos.writeBytes("HTTP/1.1 302 Found \r\n");
-            dos.writeBytes("Location: " + redirectionUrl + " \r\n");
-            dos.writeBytes("\r\n");
+
+            dos.writeBytes(String.format(HTTP_302_RESPONSE_FORMAT, redirectionUrl));
         }
     };
 
