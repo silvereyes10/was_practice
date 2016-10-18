@@ -11,8 +11,9 @@ public enum HttpResponse {
     STATUS_200 {
         @Override
         public void response(DataOutputStream dos, String body) throws IOException {
-            responseHeader(dos, body.length());
-            responseBody(dos, body.getBytes());
+            byte[] bodyBytes = body.getBytes();
+            responseHeader(dos, bodyBytes.length);
+            responseBody(dos, bodyBytes);
         }
 
         private void responseHeader(DataOutputStream dos, int bodyLength) throws IOException {
