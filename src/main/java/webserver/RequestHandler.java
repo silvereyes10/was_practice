@@ -2,6 +2,7 @@ package webserver;
 
 import com.google.common.collect.Maps;
 import db.DataBase;
+import model.HttpResponse;
 import model.User;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
@@ -41,42 +42,11 @@ public class RequestHandler extends Thread {
                 User user = MemberUtils.createUserObject(parsingMap);
                 DataBase.addUser(user);
 
-                response302Header(dos, "/index.html");
+                HttpResponse.STATUS_302.response(dos, "/index.html");
             } else {
                 byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-                response200Header(dos, body.length);
-                responseBody(dos, body);
+                HttpResponse.STATUS_200.response(dos, new String(body));
             }
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
-        try {
-            dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
-            dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private void response302Header(DataOutputStream dos, String url) {
-        try {
-            dos.writeBytes("HTTP/1.1 302 Redirect \r\n");
-            dos.writeBytes("Location: " + url + " \r\n");
-            dos.writeBytes("\r\n");
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-    }
-
-    private void responseBody(DataOutputStream dos, byte[] body) {
-        try {
-            dos.write(body, 0, body.length);
-            dos.flush();
         } catch (IOException e) {
             log.error(e.getMessage());
         }
