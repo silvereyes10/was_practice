@@ -3,6 +3,7 @@ package webserver;
 import com.google.common.collect.Maps;
 import db.DataBase;
 import model.HttpResponse;
+import model.ResponseData;
 import model.User;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
@@ -32,8 +33,10 @@ public class RequestHandler extends Thread {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
             BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             Map<String, String> parsingMap = headerParsing(br);
+            ResponseData data = new ResponseData();
 
             String url = MapUtils.getString(parsingMap, "requestPath");
+            data.setRequestUrl(url);
             log.info("[REQUEST HANDLER] Request URL: {}", url);
 
             if ("/user/create".startsWith(url)) {
@@ -43,10 +46,26 @@ public class RequestHandler extends Thread {
                 User user = MemberUtils.createUserObject(parsingMap);
                 DataBase.addUser(user);
 
-                HttpResponse.STATUS_302.response(dos, "/index.html");
+                data.setRedirectionUrl("/index.html");
+                HttpResponse.STATUS_302.response(dos, data);
+            } else if ("/user/login".startsWith(url)) {
+                if (parsingMap == null || parsingMap.isEmpty()) {
+                    log.error("[REQUEST HANDLER] Parameter is null. login process is fail.");
+                }
+
+                User user = DataBase.findUserById(MapUtils.getString(parsingMap, "userId"));
+                if (user != null) {
+                    data.setLogin(true);
+                    data.setRedirectionUrl("/index.html");
+                } else {
+                    data.setRedirectionUrl("/user/login_failed.html");
+                }
+
+                HttpResponse.STATUS_302.response(dos, data);
             } else {
                 byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-                HttpResponse.STATUS_200.response(dos, new String(body));
+                data.setResponseBody(new String(body));
+                HttpResponse.STATUS_200.response(dos, data);
             }
         } catch (IOException e) {
             log.error(e.getMessage());
