@@ -53,6 +53,7 @@ public class RequestHandler extends Thread {
 
                 data.setRedirectionUrl("/index.html");
                 HttpResponse.STATUS_302.response(dos, data);
+
             } else if ("/user/login".startsWith(url)) {
                 User user = DataBase.findUserById(MapUtils.getString(parsingMap, "userId"));
                 if (user != null && user.getPassword().equals(MapUtils.getString(parsingMap, "password"))) {
@@ -63,20 +64,19 @@ public class RequestHandler extends Thread {
                 }
 
                 HttpResponse.STATUS_302.response(dos, data);
+
             } else if ("/user/list".startsWith(url)) {
                 String cookie = parsingMap.get("Cookie");
-                log.info("Cookie : {}", parsingMap.get("Cookie"));
                 if (BooleanUtils.isFalse(isLogined(cookie))) {
                     data.setRedirectionUrl("/user/login.html");
                     HttpResponse.STATUS_302.response(dos, data);
                     return;
                 }
 
-                // TODO 회원 목록 출력
                 data.setResponseBody(this.getUserList());
                 HttpResponse.STATUS_200.response(dos, data);
-            }
-            else {
+
+            } else {
                 byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
                 data.setResponseBody(new String(body));
                 HttpResponse.STATUS_200.response(dos, data);
@@ -90,13 +90,7 @@ public class RequestHandler extends Thread {
         if (StringUtils.isBlank(cookie)) {
             return false;
         }
-
-        boolean isLogined = MapUtils.getBooleanValue(HttpRequestUtils.parseCookies(cookie), "logined");
-        if (BooleanUtils.isFalse(isLogined)) {
-            return false;
-        }
-
-        return true;
+        return MapUtils.getBooleanValue(HttpRequestUtils.parseCookies(cookie), "logined");
     }
 
     private String getUserList() {
@@ -130,9 +124,6 @@ public class RequestHandler extends Thread {
 
         line = br.readLine();
         while (!line.equals("")) {
-            if (line.contains("Cookie")) {
-                log.info("[HEADER] {}", line);
-            }
             String[] headerToken = line.split(":");
             parsingMap.put(headerToken[0].trim(), headerToken[1].trim());
             line = br.readLine();
