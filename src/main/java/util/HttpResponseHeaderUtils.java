@@ -4,16 +4,15 @@ package util;
  * @author NAVER
  */
 public class HttpResponseHeaderUtils {
-    private static final String HTTP_RESPONSE_HEADER_200 = "HTTP/1.1 200 OK\r\n";
-    private static final String HTTP_RESPONSE_HEADER_302 = "HTTP/1.1 302 Found\r\n";
+    private static final String HTTP_RESPONSE_HEADER_200 = "HTTP/1.1 200 OK \r\n";
+    private static final String HTTP_RESPONSE_HEADER_302 = "HTTP/1.1 302 Found \r\n";
 
-    private static final String HTTP_RESPONSE_HEADER_CONTENT_TYPE_HTML = "Content-Type: text/html; charset=utf-8\r\n";
-    private static final String HTTP_RESPONSE_HEADER_CONTENT_TYPE_CSS = "Content-Type: text/css; charset=utf-8\r\n";
+    private static final String HTTP_RESPONSE_HEADER_CONTENT_TYPE_HTML = "Content-Type: text/html; charset=utf-8 \r\n";
+    private static final String HTTP_RESPONSE_HEADER_CONTENT_TYPE_CSS = "Content-Type: text/css; charset=utf-8 \r\n";
 
-    private static final String HTTP_RESPONSE_HEADER_SET_COOKIES_LOGIN = "Set-Cookies: logined=true\r\n";
-
-    private static final String HTTP_RESPONSE_HEADER_CONTENT_LENGTH_FORMAT = "Content-Length: %d\r\n";
-    private static final String HTTP_RESPONSE_HEADER_REDIRECTION_LOCATION_FORMAT = "Location: %s\r\n";
+    private static final String HTTP_RESPONSE_HEADER_CONTENT_LENGTH_FORMAT = "Content-Length: %d \r\n";
+    private static final String HTTP_RESPONSE_HEADER_REDIRECTION_LOCATION_FORMAT = "Location: %s \r\n";
+    private static final String HTTP_RESPONSE_HEADER_SET_COOKIES_LOGIN_FORMAT = "Set-Cookie: logined=%b \r\n";
 
     private static final String HTTP_RESPONSE_HEADER_END = "\r\n";
 
@@ -37,11 +36,7 @@ public class HttpResponseHeaderUtils {
     public static String getHttpResponseHeader302(String redirectionLocation, boolean isLogin) {
         responseBuilder.append(HTTP_RESPONSE_HEADER_302);
         responseBuilder.append(String.format(HTTP_RESPONSE_HEADER_REDIRECTION_LOCATION_FORMAT, redirectionLocation));
-
-        if (isLogin) {
-            responseBuilder.append(HTTP_RESPONSE_HEADER_SET_COOKIES_LOGIN);
-        }
-
+        responseBuilder.append(String.format(HTTP_RESPONSE_HEADER_SET_COOKIES_LOGIN_FORMAT, isLogin));
         responseBuilder.append(HTTP_RESPONSE_HEADER_END);
 
         return getResponseHeader();

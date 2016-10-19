@@ -10,7 +10,7 @@ public class ResponseData {
 
     private String redirectionUrl;
 
-    private boolean isLogin;
+    private boolean isLogin = false;
 
     public String getRequestUrl() {
         return requestUrl;
