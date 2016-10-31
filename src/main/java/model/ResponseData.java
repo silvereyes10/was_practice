@@ -10,7 +10,13 @@ public class ResponseData {
 
     private String redirectionUrl;
 
+    private String responseStatus;
+
     private boolean isLogin = false;
+
+    public ResponseData(String requestUrl) {
+        this.requestUrl = requestUrl;
+    }
 
     public String getRequestUrl() {
         return requestUrl;
@@ -42,5 +48,13 @@ public class ResponseData {
 
     public void setLogin(boolean login) {
         isLogin = login;
+    }
+
+    public String getResponseStatus() {
+        return responseStatus;
+    }
+
+    public void setResponseStatus(String responseStatus) {
+        this.responseStatus = responseStatus;
     }
 }

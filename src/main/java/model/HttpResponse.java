@@ -4,6 +4,8 @@ import util.HttpResponseHeaderUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -27,5 +29,16 @@ public enum HttpResponse {
         }
     };
 
+    private static Map<String, HttpResponse> statusMap = new HashMap<String, HttpResponse>() {
+        {
+            put(STATUS_200.name(), STATUS_200);
+            put(STATUS_302.name(), STATUS_302);
+        }
+    };
+
     public abstract void response(DataOutputStream dos, ResponseData data) throws IOException;
+
+    public static HttpResponse getHttpResponse(String responseStatus) {
+        return statusMap.get(responseStatus);
+    }
 }
