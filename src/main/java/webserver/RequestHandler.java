@@ -1,14 +1,11 @@
 package webserver;
 
-import bo.DefaultResourceManageBO;
-import bo.DefaultResourceManageBOImpl;
-import bo.UserManageBO;
-import bo.UserManageBOImpl;
 import model.HttpResponse;
 import model.ResponseData;
 import org.apache.commons.collections.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import proxy.RequestProcessProxy;
 import util.HttpRequestUtils;
 
 import java.io.*;
@@ -19,13 +16,11 @@ public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
     private Socket connection;
-    private UserManageBO userManageBO;
-    private DefaultResourceManageBO defaultResourceManageBO;
+    private RequestProcessProxy requestProcessProxy;
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
-        this.userManageBO = new UserManageBOImpl();
-        this.defaultResourceManageBO = new DefaultResourceManageBOImpl();
+        this.requestProcessProxy = new RequestProcessProxy();
     }
 
     public void run() {
@@ -43,12 +38,7 @@ public class RequestHandler extends Thread {
             String url = MapUtils.getString(parsingMap, "Url");
             log.info("[REQUEST HANDLER] Request URL: {}", url);
 
-            ResponseData data;
-            if (url.contains("/user")) {
-                data = userManageBO.process(url, parsingMap);
-            } else {
-                data = defaultResourceManageBO.process(url, parsingMap);
-            }
+            ResponseData data = requestProcessProxy.process(url, parsingMap);
             HttpResponse httpResponse = HttpResponse.getHttpResponse(data.getResponseStatus());
             httpResponse.response(dos, data);
 

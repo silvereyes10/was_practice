@@ -17,11 +17,11 @@ import java.util.Map;
 /**
  * @author NAVER
  */
-public class UserManageBOImpl implements UserManageBO {
-    private DefaultResourceManageBO defaultResourceManageBO;
+public class UserManageBOImpl implements RequestManageBO {
+    private RequestManageBO defaultResourceManageBO;
 
     public UserManageBOImpl() {
-        this.defaultResourceManageBO = new DefaultResourceManageBOImpl();
+        this.defaultResourceManageBO = new ResourceManageBOImpl();
     }
 
     @Override

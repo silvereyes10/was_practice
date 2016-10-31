@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by silvereyes10 on 2016-10-31.
  */
-public class DefaultResourceManageBOImpl implements DefaultResourceManageBO {
+public class ResourceManageBOImpl implements RequestManageBO {
     @Override
     public ResponseData process(String url, Map<String, String> parsingMap) throws IOException {
         ResponseData data = new ResponseData(url);

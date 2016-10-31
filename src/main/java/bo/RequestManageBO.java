@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * @author NAVER
+ * Created by silvereyes10 on 2016-10-31.
  */
-public interface UserManageBO {
+public interface RequestManageBO {
     ResponseData process(String url, Map<String, String> parsingMap) throws IOException;
 }
