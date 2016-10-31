@@ -55,7 +55,7 @@ public class HttpRequestUtils {
         return new Pair(tokens[0].trim(), tokens[1].trim());
     }
 
-    private static Pair parseHeader(String header) {
+    public static Pair parseHeader(String header) {
         return getKeyValue(header, ": ");
     }
 
@@ -93,7 +93,7 @@ public class HttpRequestUtils {
         return parsingMap;
     }
 
-    private static Map<String, String> parseParameterForGet(Map<String, String> parsingMap) {
+    public static Map<String, String> parseParameterForGet(Map<String, String> parsingMap) {
         String url = parsingMap.get("Url");
 
         int index = url.indexOf("?");
@@ -110,7 +110,7 @@ public class HttpRequestUtils {
         return parsingMap;
     }
 
-    private static Map<String, String> parseParameterForPost(Map<String, String> parsingMap, BufferedReader br) throws IOException {
+    public static Map<String, String> parseParameterForPost(Map<String, String> parsingMap, BufferedReader br) throws IOException {
         int contentLength = MapUtils.getIntValue(parsingMap, "Content-Length");
 
         parsingMap.putAll(HttpRequestUtils.parseQueryString(IOUtils.readData(br, contentLength)));
