@@ -12,7 +12,7 @@ public class DataBase {
     private static Logger log = LoggerFactory.getLogger(DataBase.class);
     private static Map<String, User> users = new HashMap() {
         {
-            put("test", new User("admin", "1234", "administrator", "admin@test.com"));
+            put("admin", new User("admin", "1234", "administrator", "admin@test.com"));
         }
     };
 

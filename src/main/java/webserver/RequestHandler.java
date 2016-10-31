@@ -1,5 +1,7 @@
 package webserver;
 
+import bo.DefaultResourceManageBO;
+import bo.DefaultResourceManageBOImpl;
 import bo.UserManageBO;
 import bo.UserManageBOImpl;
 import model.HttpResponse;
@@ -11,7 +13,6 @@ import util.HttpRequestUtils;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.util.Map;
 
 public class RequestHandler extends Thread {
@@ -19,10 +20,12 @@ public class RequestHandler extends Thread {
 
     private Socket connection;
     private UserManageBO userManageBO;
+    private DefaultResourceManageBO defaultResourceManageBO;
 
     public RequestHandler(Socket connectionSocket) {
         this.connection = connectionSocket;
         this.userManageBO = new UserManageBOImpl();
+        this.defaultResourceManageBO = new DefaultResourceManageBOImpl();
     }
 
     public void run() {
@@ -38,15 +41,13 @@ public class RequestHandler extends Thread {
             }
 
             String url = MapUtils.getString(parsingMap, "Url");
-            ResponseData data = new ResponseData(url);
             log.info("[REQUEST HANDLER] Request URL: {}", url);
 
+            ResponseData data;
             if (url.contains("/user")) {
-                userManageBO.process(url, parsingMap);
+                data = userManageBO.process(url, parsingMap);
             } else {
-                byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
-                data.setResponseBody(new String(body));
-                data.setResponseStatus(HttpResponse.STATUS_200.name());
+                data = defaultResourceManageBO.process(url, parsingMap);
             }
             HttpResponse httpResponse = HttpResponse.getHttpResponse(data.getResponseStatus());
             httpResponse.response(dos, data);

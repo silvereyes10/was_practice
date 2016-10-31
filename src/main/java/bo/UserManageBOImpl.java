@@ -18,11 +18,19 @@ import java.util.Map;
  * @author NAVER
  */
 public class UserManageBOImpl implements UserManageBO {
+    private DefaultResourceManageBO defaultResourceManageBO;
+
+    public UserManageBOImpl() {
+        this.defaultResourceManageBO = new DefaultResourceManageBOImpl();
+    }
+
     @Override
     public ResponseData process(String url, Map<String, String> parsingMap) throws IOException {
         ResponseData data = new ResponseData(url);
 
-        if (url.contains("/create")) {
+        if (url.endsWith(".html")) {
+            return defaultResourceManageBO.process(url, parsingMap);
+        } else if (url.contains("/create")) {
             return create(parsingMap, data);
         } else if (url.contains("/login")) {
             return login(parsingMap, data);
