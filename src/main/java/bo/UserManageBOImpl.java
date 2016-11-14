@@ -1,7 +1,7 @@
 package bo;
 
 import db.DataBase;
-import model.HttpResponse;
+import model.HttpResponseEnum;
 import model.ResponseData;
 import model.User;
 import org.apache.commons.collections.MapUtils;
@@ -17,40 +17,18 @@ import java.util.Map;
 /**
  * @author NAVER
  */
-public class UserManageBOImpl implements RequestManageBO {
-    private RequestManageBO defaultResourceManageBO;
-
-    public UserManageBOImpl() {
-        this.defaultResourceManageBO = new ResourceManageBOImpl();
-    }
-
-    @Override
-    public ResponseData process(String url, Map<String, String> parsingMap) throws IOException {
-        ResponseData data = new ResponseData(url);
-
-        if (url.endsWith(".html")) {
-            return defaultResourceManageBO.process(url, parsingMap);
-        } else if (url.contains("/create")) {
-            return create(parsingMap, data);
-        } else if (url.contains("/login")) {
-            return login(parsingMap, data);
-        } else if (url.contains("/list")) {
-            return list(parsingMap, data);
-        }
-
-        return data;
-    }
-
-    private ResponseData list(Map<String, String> parsingMap, ResponseData data) throws IOException {
+public class UserManageBOImpl {
+    public ResponseData list(Map<String, String> parsingMap) throws IOException {
+        ResponseData data = new ResponseData(MapUtils.getString(parsingMap, "Url"));
         String cookie = parsingMap.get("Cookie");
         if (BooleanUtils.isFalse(isLogin(cookie))) {
-            data.setResponseStatus(HttpResponse.STATUS_302.name());
+            data.setResponseStatus(HttpResponseEnum.STATUS_302.name());
             data.setRedirectionUrl("/user/login.html");
             return data;
         }
 
         data.setResponseBody(this.getUserList());
-        data.setResponseStatus(HttpResponse.STATUS_200.name());
+        data.setResponseStatus(HttpResponseEnum.STATUS_200.name());
         return data;
     }
 
@@ -77,7 +55,8 @@ public class UserManageBOImpl implements RequestManageBO {
         return userListBuilder.toString();
     }
 
-    private ResponseData login(Map<String, String> parsingMap, ResponseData data) throws IOException {
+    public ResponseData login(Map<String, String> parsingMap) throws IOException {
+        ResponseData data = new ResponseData(MapUtils.getString(parsingMap, "Url"));
         User user = DataBase.findUserById(MapUtils.getString(parsingMap, "userId"));
         if (user != null && user.getPassword().equals(MapUtils.getString(parsingMap, "password"))) {
             data.setLogin(true);
@@ -86,16 +65,17 @@ public class UserManageBOImpl implements RequestManageBO {
             data.setRedirectionUrl("/user/login_failed.html");
         }
 
-        data.setResponseStatus(HttpResponse.STATUS_302.name());
+        data.setResponseStatus(HttpResponseEnum.STATUS_302.name());
         return data;
     }
 
-    private ResponseData create(Map<String, String> parsingMap, ResponseData data) throws IOException {
+    public ResponseData create(Map<String, String> parsingMap) throws IOException {
+        ResponseData data = new ResponseData(MapUtils.getString(parsingMap, "Url"));
         User user = MemberUtils.createUserObject(parsingMap);
         DataBase.addUser(user);
 
         data.setRedirectionUrl("/index.html");
-        data.setResponseStatus(HttpResponse.STATUS_302.name());
+        data.setResponseStatus(HttpResponseEnum.STATUS_302.name());
         return data;
     }
 }

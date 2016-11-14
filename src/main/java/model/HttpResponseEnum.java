@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author NAVER
  */
-public enum HttpResponse {
+public enum HttpResponseEnum {
     STATUS_200 {
         @Override
         public void response(DataOutputStream dos, ResponseData data) throws IOException {
@@ -29,7 +29,7 @@ public enum HttpResponse {
         }
     };
 
-    private static Map<String, HttpResponse> statusMap = new HashMap<String, HttpResponse>() {
+    private static Map<String, HttpResponseEnum> statusMap = new HashMap<String, HttpResponseEnum>() {
         {
             put(STATUS_200.name(), STATUS_200);
             put(STATUS_302.name(), STATUS_302);
@@ -38,7 +38,7 @@ public enum HttpResponse {
 
     public abstract void response(DataOutputStream dos, ResponseData data) throws IOException;
 
-    public static HttpResponse getHttpResponse(String responseStatus) {
+    public static HttpResponseEnum getHttpResponse(String responseStatus) {
         return statusMap.get(responseStatus);
     }
 }
