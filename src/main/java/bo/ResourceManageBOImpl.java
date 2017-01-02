@@ -1,25 +1,26 @@
 package bo;
 
-import model.HttpResponseEnum;
+import constant.HttpConstants;
+import model.HttpRequest;
 import model.ResponseData;
-import org.apache.commons.collections.MapUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Map;
 
 /**
  * Created by silvereyes10 on 2016-10-31.
  */
-public class ResourceManageBOImpl {
-    public ResponseData getResource(Map<String, String> parsingMap) throws IOException {
-        String url = MapUtils.getString(parsingMap, "Url");
-        ResponseData data = new ResponseData(url);
+public class ResourceManageBOImpl implements ResourceManageBO {
+    @Override
+    public ResponseData getResource(HttpRequest request) throws IOException {
+        String requestUrl = request.getPath().equals("/") ? "/index.html" : request.getPath();
+        ResponseData data = new ResponseData(requestUrl);
 
-        byte[] body = Files.readAllBytes(new File("./webapp" + url).toPath());
+        byte[] body = Files.readAllBytes(new File("./webapp" + requestUrl).toPath());
         data.setResponseBody(new String(body));
-        data.setResponseStatus(HttpResponseEnum.STATUS_200.name());
+        data.setContentLength(body.length);
+        data.setResponseStatus(HttpConstants.HTTP_STATUS_200);
 
         return data;
     }

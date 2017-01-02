@@ -1,7 +1,8 @@
 package bo;
 
+import constant.HttpConstants;
 import db.DataBase;
-import model.HttpResponseEnum;
+import model.HttpRequest;
 import model.ResponseData;
 import model.User;
 import org.apache.commons.collections.MapUtils;
@@ -10,31 +11,31 @@ import org.apache.commons.lang3.StringUtils;
 import util.HttpRequestUtils;
 import util.MemberUtils;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * @author NAVER
  */
-public class UserManageBOImpl {
-    public ResponseData list(Map<String, String> parsingMap) throws IOException {
-        ResponseData data = new ResponseData(MapUtils.getString(parsingMap, "Url"));
-        String cookie = parsingMap.get("Cookie");
+public class UserManageBOImpl implements UserManageBO {
+    @Override
+    public ResponseData list(HttpRequest request) {
+        ResponseData data = new ResponseData(request.getPath());
+        String cookie = request.getHeader("Cookie");
         if (BooleanUtils.isFalse(isLogin(cookie))) {
-            data.setResponseStatus(HttpResponseEnum.STATUS_302.name());
+            data.setResponseStatus(HttpConstants.HTTP_STATUS_302);
             data.setRedirectionUrl("/user/login.html");
             return data;
         }
-
-        data.setResponseBody(this.getUserList());
-        data.setResponseStatus(HttpResponseEnum.STATUS_200.name());
+        String responseBody = getUserList();
+        data.setResponseBody(responseBody);
+        data.setContentLength(responseBody.getBytes().length);
+        data.setResponseStatus(HttpConstants.HTTP_STATUS_200);
         return data;
     }
 
     private boolean isLogin(String cookie) {
         return BooleanUtils.isFalse(StringUtils.isBlank(cookie))
-                && MapUtils.getBooleanValue(HttpRequestUtils.parseCookies(cookie), "logined");
+                && MapUtils.getBooleanValue(HttpRequestUtils.parseCookies(cookie), "Logined");
     }
 
     private String getUserList() {
@@ -55,27 +56,29 @@ public class UserManageBOImpl {
         return userListBuilder.toString();
     }
 
-    public ResponseData login(Map<String, String> parsingMap) throws IOException {
-        ResponseData data = new ResponseData(MapUtils.getString(parsingMap, "Url"));
-        User user = DataBase.findUserById(MapUtils.getString(parsingMap, "userId"));
-        if (user != null && user.getPassword().equals(MapUtils.getString(parsingMap, "password"))) {
-            data.setLogin(true);
+    @Override
+    public ResponseData login(HttpRequest request) {
+        ResponseData data = new ResponseData(request.getPath());
+        User user = DataBase.findUserById(request.getParameterValue("userId"));
+        if (user != null && user.getPassword().equals(request.getParameterValue("password"))) {
+            data.addHeader("Logined", "true");
             data.setRedirectionUrl("/index.html");
         } else {
             data.setRedirectionUrl("/user/login_failed.html");
         }
 
-        data.setResponseStatus(HttpResponseEnum.STATUS_302.name());
+        data.setResponseStatus(HttpConstants.HTTP_STATUS_302);
         return data;
     }
 
-    public ResponseData create(Map<String, String> parsingMap) throws IOException {
-        ResponseData data = new ResponseData(MapUtils.getString(parsingMap, "Url"));
-        User user = MemberUtils.createUserObject(parsingMap);
+    @Override
+    public ResponseData create(HttpRequest request) {
+        ResponseData data = new ResponseData(request.getPath());
+        User user = MemberUtils.createUserObject(request.getParameter());
         DataBase.addUser(user);
 
         data.setRedirectionUrl("/index.html");
-        data.setResponseStatus(HttpResponseEnum.STATUS_302.name());
+        data.setResponseStatus(HttpConstants.HTTP_STATUS_302);
         return data;
     }
 }

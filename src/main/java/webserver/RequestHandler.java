@@ -1,16 +1,16 @@
 package webserver;
 
 import manage.UrlManager;
-import model.HttpResponseEnum;
-import model.ResponseData;
-import org.apache.commons.collections.MapUtils;
+import model.HttpRequest;
+import model.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.HttpRequestUtils;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -28,20 +28,10 @@ public class RequestHandler extends Thread {
                 OutputStream out = connection.getOutputStream();
                 DataOutputStream dos = new DataOutputStream(out)) {
             // TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            Map<String, String> parsingMap = HttpRequestUtils.parseHeader(br);
-            if (parsingMap == null || parsingMap.isEmpty()) {
-                log.error("[REQUEST HANDLER] Parameter is null.");
-                return;
-            }
+            HttpRequest httpRequest = new HttpRequest(in);
+            HttpResponse httpResponse = new HttpResponse(dos);
 
-            String url = MapUtils.getString(parsingMap, "Url");
-            log.info("[REQUEST HANDLER] Request URL: {}", url);
-
-            ResponseData data = UrlManager.getUrlConnector(url).process(parsingMap);
-            HttpResponseEnum httpResponseEnum = HttpResponseEnum.getHttpResponse(data.getResponseStatus());
-            httpResponseEnum.response(dos, data);
-
+            UrlManager.getController(httpRequest.getPath()).service(httpRequest, httpResponse);
         } catch (IOException e) {
             log.error(e.getMessage());
         }

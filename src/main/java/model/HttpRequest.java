@@ -1,6 +1,7 @@
 package model;
 
 import com.google.common.collect.Maps;
+import condition.HttpMethod;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import util.HttpRequestUtils;
@@ -10,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -18,7 +20,7 @@ import java.util.Map;
 public class HttpRequest {
     private BufferedReader br;
 
-    private String method;
+    private HttpMethod method;
     private String path;
     private String protocol;
     private Map<String, String> header;
@@ -39,9 +41,9 @@ public class HttpRequest {
     }
 
     private void parseParameter() throws IOException {
-        if (HttpRequestUtils.HTTP_METHOD_GET.equals(method)) {
+        if (method.isGet()) {
             parameter = parseParameterForGet();
-        } else if (HttpRequestUtils.HTTP_METHOD_POST.equals(method)) {
+        } else if (method.isPost()) {
             parameter = parseParameterForPost();
         }
     }
@@ -78,17 +80,17 @@ public class HttpRequest {
 
     private void parseFirstLine(String header) {
         String[] urlTokens = header.split(" ");
-        method = urlTokens[0];
+        method = HttpMethod.valueOf(urlTokens[0]);
         path = urlTokens[1];
         protocol = urlTokens[2];
 
     }
 
-    public void setMethod(String method) {
+    public void setMethod(HttpMethod method) {
         this.method = method;
     }
 
-    public String getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 
@@ -112,8 +114,12 @@ public class HttpRequest {
         this.parameter = parameter;
     }
 
-    public String getParameter(String key) {
+    public String getParameterValue(String key) {
         return parameter.get(key);
+    }
+
+    public Map<String, String> getParameter() {
+        return Collections.unmodifiableMap(parameter);
     }
 
     public String getProtocol() {

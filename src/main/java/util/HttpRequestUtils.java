@@ -2,18 +2,12 @@ package util;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import org.apache.commons.collections.MapUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class HttpRequestUtils {
-    public static String HTTP_METHOD_GET = "GET";
-    public static String HTTP_METHOD_POST = "POST";
-
     /**
      * @param queryString
      *                  은 URL에서 ? 이후에 전달되는 field1=value1&field2=value2 형식임
@@ -57,64 +51,6 @@ public class HttpRequestUtils {
 
     public static Pair parseHeader(String header) {
         return getKeyValue(header, ": ");
-    }
-
-    public static Map<String, String> parseHeader(BufferedReader br) throws IOException {
-        Map<String, String> parsingMap = parseFirstLine(br.readLine());
-        String line = br.readLine();
-        while (!line.equals("")) {
-            Pair pair = parseHeader(line);
-
-            if (pair != null) {
-                parsingMap.put(pair.getKey(), pair.getValue());
-            }
-
-            line = br.readLine();
-        }
-
-        String method = parsingMap.get("Method");
-        if (HttpRequestUtils.HTTP_METHOD_GET.equals(method)) {
-            parsingMap.putAll(parseParameterForGet(parsingMap));
-        } else if (HttpRequestUtils.HTTP_METHOD_POST.equals(method)) {
-            parsingMap.putAll(parseParameterForPost(parsingMap, br));
-        }
-
-        return parsingMap;
-    }
-
-    private static Map<String, String> parseFirstLine(String header) {
-        Map<String, String> parsingMap = Maps.newHashMap();
-        String[] urlTokens = header.split(" ");
-
-        parsingMap.put("Method", urlTokens[0]);
-        parsingMap.put("Url", urlTokens[1]);
-        parsingMap.put("Protocol", urlTokens[2]);
-
-        return parsingMap;
-    }
-
-    public static Map<String, String> parseParameterForGet(Map<String, String> parsingMap) {
-        String url = parsingMap.get("Url");
-
-        int index = url.indexOf("?");
-        if (index == -1) {
-            parsingMap.put("Url", url);
-            return parsingMap;
-        }
-
-        String requestPath = url.substring(0, index);
-
-        parsingMap.put("Url", requestPath);
-        parsingMap.putAll(HttpRequestUtils.parseQueryString(url.substring(index + 1, url.length())));
-
-        return parsingMap;
-    }
-
-    public static Map<String, String> parseParameterForPost(Map<String, String> parsingMap, BufferedReader br) throws IOException {
-        int contentLength = MapUtils.getIntValue(parsingMap, "Content-Length");
-
-        parsingMap.putAll(HttpRequestUtils.parseQueryString(IOUtils.readData(br, contentLength)));
-        return parsingMap;
     }
 
     public static class Pair {
